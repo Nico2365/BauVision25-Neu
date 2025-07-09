@@ -1,6 +1,5 @@
-
 {
-  "name": "bauvision25",
+  "name": "bauvision25-mit-login-und-firestore",
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
@@ -8,11 +7,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "firebase": "^10.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "vite": "^4.5.0",
-    "@vitejs/plugin-react": "^4.0.0"
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.0.0"
   }
 }
