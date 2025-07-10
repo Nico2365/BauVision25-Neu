@@ -1,0 +1,1 @@
+// Firebase Konfiguration kommt hier rein – wird automatisch ergänzt
