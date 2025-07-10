@@ -1,4 +1,3 @@
-// App.jsx
 import React, { useState } from "react";
 import { auth } from "./firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -20,7 +19,7 @@ export default function App() {
 
   if (!eingeloggt) {
     return (
-      <div style={{ padding: 40 }}>
+      <div style={{ padding: 40, backgroundColor: "#e6ffe6", minHeight: "100vh" }}>
         <h2>Login – BauVision25</h2>
         <input
           placeholder="E-Mail"
@@ -39,5 +38,5 @@ export default function App() {
     );
   }
 
-  return <h1>✅ Eingeloggt! Start der BauVision25</h1>;
+  return <h1 style={{ padding: 40 }}>✅ Eingeloggt! Start der BauVision25</h1>;
 }
