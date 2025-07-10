@@ -1,5 +1,5 @@
 {
-  "name": "bauvision25-next",
+  "name": "bauvision25",
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
@@ -9,5 +9,9 @@
     "firebase": "^9.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "vite": "^4.0.0",
+    "@vitejs/plugin-react": "^4.0.0"
   }
 }
