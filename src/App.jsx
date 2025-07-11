@@ -181,6 +181,24 @@ export default function App() {
           ))}
         </ul>
       </div>
+      {/* Drag-and-Drop-Feld */}
+<div
+  onDragOver={(e) => e.preventDefault()}
+  onDrop={(e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    bilderHinzufuegen({ target: { files } });
+  }}
+  style={{
+    border: "2px dashed #aaa",
+    padding: 20,
+    marginBottom: 20,
+    backgroundColor: "#f1f1f1",
+    textAlign: "center"
+  }}
+>
+  <p>📂 Dateien hierher ziehen zum Hochladen</p>
+</div>
       <input type="file" multiple onChange={bilderHinzufuegen} />
       <button onClick={pdfErstellen}>PDF erstellen</button>
       <button onClick={() => setAktuellesProjekt(null)}>
