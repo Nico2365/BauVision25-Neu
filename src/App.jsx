@@ -94,7 +94,33 @@ export default function App() {
       </div>
     );
   }
-
+if (aktuellesProjekt) {
+  return (
+    <div style={{ padding: 20 }}>
+      <div id="pdf-content">
+        <h2>{aktuellesProjekt.name}</h2>
+        <p>
+          Adresse: {aktuellesProjekt.strasse} {aktuellesProjekt.hausnummer},{" "}
+          {aktuellesProjekt.plz} {aktuellesProjekt.stadt}
+        </p>
+        <p>
+          Bauherr: {aktuellesProjekt.bauherr} | Ansprechpartner:{" "}
+          {aktuellesProjekt.ansprechpartner}
+        </p>
+        <ul>
+          {(aktuellesProjekt.bilder || []).map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+      </div>
+      <input type="file" multiple onChange={bilderHinzufuegen} />
+      <button onClick={pdfErstellen}>PDF erstellen</button>
+      <button onClick={() => setAktuellesProjekt(null)}>
+        Zurück zur Übersicht
+      </button>
+    </div>
+  );
+}
   return (
     <div style={{ padding: 20 }}>
       <h2>Willkommen, {user.email}</h2>
