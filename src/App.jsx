@@ -1,8 +1,7 @@
-// App.jsx
 import React, { useState, useEffect } from "react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-import { collection, addDoc, getDocs, doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -14,14 +13,7 @@ export default function App() {
   const [projekte, setProjekte] = useState([]);
   const [aktuellesProjekt, setAktuellesProjekt] = useState(null);
   const [bilder, setBilder] = useState([]);
-  const [form, setForm] = useState({
-    plz: "",
-    strasse: "",
-    hausnummer: "",
-    stadt: "",
-    bauherr: "",
-    ansprechpartner: ""
-  });
+  const [form, setForm] = useState({ plz: "", strasse: "", hausnummer: "", stadt: "", bauherr: "", ansprechpartner: "" });
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (usr) => {
@@ -37,7 +29,7 @@ export default function App() {
 
   const ladeProjekte = async (uid) => {
     const snapshot = await getDocs(collection(db, "nutzer", uid, "projekte"));
-    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setProjekte(data);
   };
 
@@ -46,23 +38,14 @@ export default function App() {
   };
 
   const erstelleProjekt = async () => {
-    if (!projektname.trim()) {
-      alert("Bitte gib einen Projektnamen ein.");
-      return;
-    }
-    const existiert = projekte.find((p) => p.name === projektname);
-    if (existiert) {
-      alert("Projektname bereits vorhanden.");
-      return;
-    }
-
+    if (!projektname || projekte.find(p => p.name === projektname)) return;
     const projekt = {
       name: projektname,
       ...form,
       bilder: []
     };
-
-    await addDoc(collection(db, "nutzer", user.uid, "projekte"), projekt);
+    const ref = doc(db, "nutzer", user.uid, "projekte", projektname);
+    await setDoc(ref, projekt);
     setProjektname("");
     setForm({ plz: "", strasse: "", hausnummer: "", stadt: "", bauherr: "", ansprechpartner: "" });
     ladeProjekte(user.uid);
@@ -70,13 +53,10 @@ export default function App() {
 
   const bilderHinzufuegen = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((f) => f.name);
-    const aktualisiert = {
-      ...aktuellesProjekt,
-      bilder: [...(aktuellesProjekt.bilder || []), ...fileNames]
-    };
+    const fileNames = files.map(f => f.name);
+    const aktualisiert = { ...aktuellesProjekt, bilder: [...(aktuellesProjekt.bilder || []), ...fileNames] };
     setAktuellesProjekt(aktualisiert);
-    setDoc(doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.id), aktualisiert);
+    setDoc(doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.name), aktualisiert);
   };
 
   const pdfErstellen = () => {
@@ -111,7 +91,7 @@ export default function App() {
         <button onClick={erstelleProjekt}>Projekt anlegen</button>
         <ul>
           {projekte.map((p) => (
-            <li key={p.id}>
+            <li key={p.name}>
               <button onClick={() => setAktuellesProjekt(p)}>{p.name}</button>
             </li>
           ))}
