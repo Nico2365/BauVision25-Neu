@@ -106,7 +106,17 @@ export default function App() {
       <ul>
         {projekte.map((p) => (
           <li key={p.name}>
-            <button onClick={() => setAktuellesProjekt(p)}>{p.name}</button>
+            <button
+  onClick={async () => {
+    const ref = doc(db, "nutzer", user.uid, "projekte", p.name);
+    const snapshot = await getDoc(ref);
+    if (snapshot.exists()) {
+      setAktuellesProjekt({ id: p.name, ...snapshot.data() });
+    }
+  }}
+>
+  {p.name}
+</button>
           </li>
         ))}
       </ul>
