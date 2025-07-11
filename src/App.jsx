@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { auth, db } from "./firebase";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-import { collection, doc, setDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  getDoc
+} from "firebase/firestore";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -13,7 +19,14 @@ export default function App() {
   const [projekte, setProjekte] = useState([]);
   const [aktuellesProjekt, setAktuellesProjekt] = useState(null);
   const [bilder, setBilder] = useState([]);
-  const [form, setForm] = useState({ plz: "", strasse: "", hausnummer: "", stadt: "", bauherr: "", ansprechpartner: "" });
+  const [form, setForm] = useState({
+    plz: "",
+    strasse: "",
+    hausnummer: "",
+    stadt: "",
+    bauherr: "",
+    ansprechpartner: ""
+  });
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (usr) => {
@@ -29,34 +42,61 @@ export default function App() {
 
   const ladeProjekte = async (uid) => {
     const snapshot = await getDocs(collection(db, "nutzer", uid, "projekte"));
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setProjekte(data);
   };
 
   const login = async () => {
-    await signInWithEmailAndPassword(auth, email, passwort);
+    try {
+      await signInWithEmailAndPassword(auth, email, passwort);
+    } catch (err) {
+      alert("Login fehlgeschlagen: " + err.message);
+    }
   };
 
   const erstelleProjekt = async () => {
-    if (!projektname || projekte.find(p => p.name === projektname)) return;
+    const uid = auth.currentUser?.uid;
+    if (!uid || !projektname) return;
+
+    const projektRef = doc(db, "nutzer", uid, "projekte", projektname);
+    const existiert = await getDoc(projektRef);
+
+    if (existiert.exists()) {
+      alert("Ein Projekt mit diesem Namen existiert bereits.");
+      return;
+    }
+
     const projekt = {
       name: projektname,
       ...form,
       bilder: []
     };
-    const ref = doc(db, "nutzer", user.uid, "projekte", projektname);
-    await setDoc(ref, projekt);
+
+    await setDoc(projektRef, projekt);
     setProjektname("");
-    setForm({ plz: "", strasse: "", hausnummer: "", stadt: "", bauherr: "", ansprechpartner: "" });
-    ladeProjekte(user.uid);
+    setForm({
+      plz: "",
+      strasse: "",
+      hausnummer: "",
+      stadt: "",
+      bauherr: "",
+      ansprechpartner: ""
+    });
+    ladeProjekte(uid);
   };
 
   const bilderHinzufuegen = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map(f => f.name);
-    const aktualisiert = { ...aktuellesProjekt, bilder: [...(aktuellesProjekt.bilder || []), ...fileNames] };
+    const namen = files.map((f) => f.name);
+    const aktualisiert = {
+      ...aktuellesProjekt,
+      bilder: [...(aktuellesProjekt.bilder || []), ...namen]
+    };
     setAktuellesProjekt(aktualisiert);
-    setDoc(doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.name), aktualisiert);
+    setDoc(
+      doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.name),
+      aktualisiert
+    );
   };
 
   const pdfErstellen = () => {
@@ -73,8 +113,17 @@ export default function App() {
     return (
       <div style={{ padding: 20 }}>
         <h2>Login</h2>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-Mail" />
-        <input value={passwort} onChange={(e) => setPasswort(e.target.value)} type="password" placeholder="Passwort" />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="E-Mail"
+        />
+        <input
+          value={passwort}
+          onChange={(e) => setPasswort(e.target.value)}
+          type="password"
+          placeholder="Passwort"
+        />
         <button onClick={login}>Einloggen</button>
       </div>
     );
@@ -84,9 +133,23 @@ export default function App() {
     return (
       <div style={{ padding: 20 }}>
         <h2>Projektübersicht</h2>
-        <input value={projektname} onChange={(e) => setProjektname(e.target.value)} placeholder="Projektname" />
+        <input
+          value={projektname}
+          onChange={(e) => setProjektname(e.target.value)}
+          placeholder="Projektname"
+        />
         {["plz", "strasse", "hausnummer", "stadt", "bauherr", "ansprechpartner"].map((key) => (
-          <input key={key} value={form[key]} placeholder={key} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
+          <input
+            key={key}
+            value={form[key]}
+            placeholder={key}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                [key]: e.target.value
+              })
+            }
+          />
         ))}
         <button onClick={erstelleProjekt}>Projekt anlegen</button>
         <ul>
@@ -104,15 +167,26 @@ export default function App() {
     <div style={{ padding: 20 }}>
       <div id="pdf-content">
         <h2>{aktuellesProjekt.name}</h2>
-        <p>Adresse: {aktuellesProjekt.strasse} {aktuellesProjekt.hausnummer}, {aktuellesProjekt.plz} {aktuellesProjekt.stadt}</p>
-        <p>Bauherr: {aktuellesProjekt.bauherr} | Ansprechpartner: {aktuellesProjekt.ansprechpartner}</p>
+        <p>
+          Adresse: {aktuellesProjekt.strasse} {aktuellesProjekt.hausnummer},{" "}
+          {aktuellesProjekt.plz} {aktuellesProjekt.stadt}
+        </p>
+        <p>
+          Bauherr: {aktuellesProjekt.bauherr} | Ansprechpartner:{" "}
+          {aktuellesProjekt.ansprechpartner}
+        </p>
         <ul>
-          {(aktuellesProjekt.bilder || []).map((b, i) => <li key={i}>{b}</li>)}
+          {(aktuellesProjekt.bilder || []).map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
         </ul>
       </div>
       <input type="file" multiple onChange={bilderHinzufuegen} />
       <button onClick={pdfErstellen}>PDF erstellen</button>
-      <button onClick={() => setAktuellesProjekt(null)}>Zurück</button>
+      <button onClick={() => setAktuellesProjekt(null)}>
+        Zurück zur Übersicht
+      </button>
     </div>
   );
 }
+
