@@ -106,17 +106,25 @@ export default function App() {
       <ul>
         {projekte.map((p) => (
           <li key={p.name}>
-            <button
+           <button
   onClick={async () => {
     const ref = doc(db, "nutzer", user.uid, "projekte", p.name);
-    const snapshot = await getDoc(ref);
-    if (snapshot.exists()) {
-      setAktuellesProjekt({ id: p.name, ...snapshot.data() });
+    try {
+      const snapshot = await getDoc(ref);
+      if (snapshot.exists()) {
+        console.log("Projekt geöffnet:", snapshot.data());
+        setAktuellesProjekt({ id: p.name, ...snapshot.data() });
+      } else {
+        console.warn("Projekt nicht gefunden in Firestore.");
+      }
+    } catch (err) {
+      console.error("Fehler beim Laden:", err.message);
     }
   }}
 >
   {p.name}
 </button>
+
           </li>
         ))}
       </ul>
