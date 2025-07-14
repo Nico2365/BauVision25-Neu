@@ -83,7 +83,26 @@ export default function App() {
     });
     ladeProjekte(uid);
   };
+const bilderHinzufuegen = (e) => {
+  const files = Array.from(e.target.files);
+  const namen = files.map((f) => f.name);
+  const aktualisiert = {
+    ...aktuellesProjekt,
+    bilder: [...(aktuellesProjekt.bilder || []), ...namen]
+  };
+  setAktuellesProjekt(aktualisiert);
+  setDoc(doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.name), aktualisiert);
+};
 
+const pdfErstellen = () => {
+  const input = document.getElementById("pdf-content");
+  html2canvas(input).then((canvas) => {
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF();
+    pdf.addImage(imgData, "PNG", 10, 10);
+    pdf.save(`${aktuellesProjekt.name}.pdf`);
+  });
+};
   if (!user) {
     return (
       <div style={{ padding: 20 }}>
