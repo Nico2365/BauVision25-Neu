@@ -132,7 +132,43 @@ if (aktuellesProjekt) {
           ))}
         </ul>
       </div>
-      <input type="file" multiple onChange={bilderHinzufuegen} />
+     <div
+  onDragOver={(e) => e.preventDefault()}
+  onDrop={(e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    const namen = files.map((f) => f.name);
+    const aktualisiert = {
+      ...aktuellesProjekt,
+      bilder: [...(aktuellesProjekt.bilder || []), ...namen]
+    };
+    setAktuellesProjekt(aktualisiert);
+    setDoc(doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.name), aktualisiert);
+  }}
+  style={{
+    border: "2px dashed gray",
+    padding: 20,
+    marginBottom: 10,
+    textAlign: "center"
+  }}
+>
+  <p>📂 Bilder hierher ziehen oder auswählen</p>
+  <input
+    type="file"
+    multiple
+    onChange={(e) => {
+      const files = Array.from(e.target.files);
+      const namen = files.map((f) => f.name);
+      const aktualisiert = {
+        ...aktuellesProjekt,
+        bilder: [...(aktuellesProjekt.bilder || []), ...namen]
+      };
+      setAktuellesProjekt(aktualisiert);
+      setDoc(doc(db, "nutzer", user.uid, "projekte", aktuellesProjekt.name), aktualisiert);
+    }}
+  />
+</div>
+
       <button onClick={pdfErstellen}>PDF erstellen</button>
       <button onClick={() => setAktuellesProjekt(null)}>
         Zurück zur Übersicht
